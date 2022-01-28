@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class UsersController extends Controller
 {
@@ -11,7 +16,7 @@ class UsersController extends Controller
 
 
     		$validator = validator::make(json_decode($req->getContent(),true), 
-    			['Nombre' => 'required|unique:App\Models\User|max:55', 
+    			['Username' => 'required|unique:App\Models\User|max:55', 
     			 'Email' => 'required|email|unique:App\Models\User,email|max:30',
     			 'Password' => 'required|regex:/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{6,}/',
     			 'Rol' => 'required|in:Particular,Profesional,Administrador'
@@ -28,16 +33,15 @@ class UsersController extends Controller
     			$datos = json_decode($datos);
 
     			$usuario = new User();
-    			$usuario->Nombre = $datos->Nombre;
+    			$usuario->Username = $datos->Username;
 		    	$usuario->Email = $datos->Email;
 		    	$usuario->Password = Hash::make($datos->Password);
-		    	$usuario->Salario = $datos->Salario;
-		    	$usuario->PuestoTrabajo = $datos->PuestoTrabajo;
-		    	$usuario->Biografia = $datos->Biografia;
+		    	$usuario->Rol = $datos->Rol;
 
 		    	try{
 		            
 		    		$usuario->save();
+		    		$respuesta['status'] = 1;
 		    		$respuesta['msg'] = "Usuario guardado con id ".$usuario->id;
 		            
 		    	}catch(\Exception $e){
@@ -79,7 +83,7 @@ class UsersController extends Controller
 					$usuario->save();
 	
 					try{
-						$respuesta["status"] = 0;
+						$respuesta["status"] = 1;
 						$respuesta["msg"] = "Login correcto, tu token es: ".$usuario->api_token;
 						//return response()->json($apitoken);
 						
@@ -113,16 +117,13 @@ class UsersController extends Controller
 		$datos = $req->getContent();
 		$datos = json_decode($datos);
 
-    	//Buscar email
     	$email = $datos->Email;
-    	//Obtener el email y validarlo como login
 
 		if($usuario = User::where('Email',$email)->first()){
 			$usuario = User::where('Email',$email)->first();
-			//Si encontramos al usuario 
 			$usuario->api_token = null;
 
-			//$newPassword = /*generarla aleatoriamente*/;
+			
 
 			$password = Str::random(8);
 			
@@ -130,10 +131,9 @@ class UsersController extends Controller
 			$usuario->save();
 
 			try{
-				//Enviarla por email
-				Mail::to($usuario->Email)->send(new OrderShipped($password));
-				$respuesta["status"] = 0;
-				$respuesta["msg"] = "Password enviada al email";
+				
+				$respuesta["status"] = 1;
+				$respuesta["msg"] = "New password: "($password);
 				
 			}catch(\Exception $e){
 				$respuesta['status'] = 0;
