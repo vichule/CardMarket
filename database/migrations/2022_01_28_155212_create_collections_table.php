@@ -17,7 +17,7 @@ class CreateCollectionsTable extends Migration
             $table->id();
             $table->string('Name', 150);
             $table->string('Symbol');
-
+            $table->date('Launch_data');
             $table->timestamps();
         });
     }

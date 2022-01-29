@@ -54,6 +54,7 @@ class UsersController extends Controller
     }
 
 
+
     public function login(Request $req){
 		$respuesta = ["status" => 1, "msg" => ""];
 
@@ -147,4 +148,47 @@ class UsersController extends Controller
 			
 		}
     	return response()->json($respuesta);	
-    }}
+    }
+
+
+
+	public function cardRegister(Request $req){
+    	$respuesta = ["status" => 1, "msg" => ""];
+
+
+    		$validator = validator::make(json_decode($req->getContent(),true), 
+    			['Name' => 'required|unique:App\Models\Card|max:55', 
+    			 'Description' => 'required|email|unique:App\Models\Card,email|max:30',
+    			 'Collections_id' => 'required'
+
+    			]);
+
+    		if ($validator->fails()) {
+    			$respuesta["status"] = 0;
+    			$respuesta["msg"] = $validator->errors();
+    			
+    		}else{
+
+    			$datos = $req->getContent();
+    			$datos = json_decode($datos);
+
+    			$card = new User();
+    			$card->Name = $datos->Name;
+		    	$card->Description = $datos->Description;
+		    	
+
+		    	try{
+		            
+		    		$card->save();
+		    		$respuesta['status'] = 1;
+		    		$respuesta['msg'] = "Carta guardada con id ".$card->id;
+		            
+		    	}catch(\Exception $e){
+		    		$respuesta['status'] = 0;
+		    		$respuesta['msg'] = "Se ha producido un error ".$e->getMessage();
+		    	}
+		    	
+    		}
+    		return response()->json($respuesta);
+    }
+}

@@ -27,3 +27,9 @@ Route::prefix('users')->group(function(){
 	Route::put('/register',[UsersController::class,'register']);
 
 });
+
+Route::middleware(['apitoken','permisos'])->prefix('users')->group(function(){
+
+    Route::put('/cardRegister',[UsersController::class,'cardRegister']);
+
+});
