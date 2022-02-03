@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\CardsController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +28,11 @@ Route::prefix('users')->group(function(){
 	Route::post('/recoverPass',[UsersController::class,'recoverPass']);
 	Route::put('/register',[UsersController::class,'register']);
 
+});
+
+Route::prefix('cards')->group(function(){
+
+    Route::get('/searchCard',[CursosController::class,'searchCard']);
 });
 
 Route::middleware(['apitoken','permisos'])->prefix('users')->group(function(){

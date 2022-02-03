@@ -17,8 +17,6 @@ class CreateCardsTable extends Migration
             $table->id();
             $table->string('Name', 100);
             $table->string('Description');
-            $table->unsignedBigInteger('collections_id');
-            $table->foreign('collections_id')->references('id')->on('collections');
 
             $table->timestamps();
         });
