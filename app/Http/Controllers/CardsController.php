@@ -45,47 +45,51 @@ class CardsController extends Controller
         Log::debug($respuesta);
     }*/
 
-        Log::info('Inicio búsqueda');
+        Log::info('Inicio validación');
         $respuesta = ["status" => 1, "msg" => ""];
-        $validator = Validator::make($request->all(), ['input' => 'required|max:30']);
+        $validator = Validator::make($request->all(), ['Name' => 'required|max:30']);
         //$validator = Validator::make($req->all(), ['input' => 'required|max:30']);
         if($validator->fails()){
-
+            Log::warning('Nombre o parámetro incorrecto');
             $respuesta['status'] = 0;
             $respuesta['msg'] = $validator->errors();
+            //$respuesta['msg'] = "hola";
         }else{
-
+            Log::info('Proceso validación correcto');
 
             try{
-                $datos = $request-> getContent();
-                $datos = json_decode($datos);
-                
+                //$datos = $req-> getContent();
+                //$datos = json_decode($datos);
+                Log::info('Inicio de búsqueda');
                 $input = DB::table('cards')
                         ->select(['id','Name','Description'])
-                        ->where('Name', 'like', '%'. $datos -> input.'%')
+                        ->where('Name', 'like', '%'.$request->Name.'%')
                         ->get();
-
+                        Log::info('Búsqueda finalizada con los parámetros introducidos');
                 if($input->isEmpty()){
                     $respuesta['status'] = 0;
                     $respuesta['msg'] = "Nombre incorrecto o no existe";
-
+                    Log::warning('Nombre incorrecto o no existe');
                 } else {
+
                     $respuesta['status'] = 1;
                     $respuesta['msg'] = "Nombre correcto";
-
+                    $respuesta = $input;
+                    Log::info('Nombre correcto, se procede la obtención de datos');
                 }
 
             }catch(\Exception $e){
                 Log::error('Error en la búsqueda');
                 $respuesta['status'] = 0;
                 $respuesta['msg'] = "Se ha producido un error: ".$e->getMessage();
+                //$respuesta['msg'] = "adios";
             }
 
 
 
         }
 
-        Log::info('Proceso finalizado');
+        Log::info('Proceso finalizado, se muestran resultados');
         return response()->json($respuesta);
         Log::debug($respuesta);
     }
