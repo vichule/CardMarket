@@ -32,7 +32,7 @@ Route::prefix('users')->group(function(){
 
 Route::prefix('cards')->group(function(){
 
-    Route::get('/searchCard',[CursosController::class,'searchCard']);
+    Route::get('/searchCard',[CardsController::class,'searchCard']);
 });
 
 Route::middleware(['apitoken','permisos'])->prefix('users')->group(function(){

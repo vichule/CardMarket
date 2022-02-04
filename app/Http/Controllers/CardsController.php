@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Card;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CardsController extends Controller
 {
@@ -13,22 +14,24 @@ class CardsController extends Controller
         $respuesta = ["status" => 1, "msg" => ""];
         $datos = $req-> getContent();
         $datos = json_decode($datos);
-        Log::info('Procesacion datos completado')                                                                                                                         
+        Log::info('Procesacion datos completado');                                                                                                                       
         try{
 
-            $card = DB::Table('card');
+            $card = DB::Table('cards');
 
-            if ($req->has('Name')) {
-            Log::info('Procesando nombre')
-            $card = Card::withCount('cards as cards')
-            ->where('Name', 'like', '%' .$req->input('Name'). '%')
-            ->get();
-            $respuesta['datos'] = $card;
-            Log::info('Proceso completado')
+            if ($datos->has('Name')) {
+                Log::info('Procesando nombre');
+                $card = DB::table('cards')
+                ->where('Name', 'like', '%' .$datos->input('Name'). '%')
+                ->get();
+                $respuesta['status'] = 1;
+                $respuesta['msg'] = "Se ha producido un error: ".$e->getMessage();
+                //$respuesta['datos'] = $card;
+                Log::info('Proceso completado');
         	} else {
-        	Log::warning('Nombre incorrecto')
-        	$card = Card::withCount('cards as cards')->get();
-            $respuesta['datos'] = $card;
+                Log::warning('Nombre incorrecto');
+                $respuesta['status'] = 0;
+                $respuesta['Nombre incorrecto o no existe'];
         	}
             
         }catch(\Exception $e){
@@ -36,7 +39,7 @@ class CardsController extends Controller
             $respuesta['status'] = 0;
             $respuesta['msg'] = "Se ha producido un error: ".$e->getMessage();
         }
-        Log::info('Proceso finalizado')
+        Log::info('Proceso finalizado');
         return response()->json($respuesta);
         Log::debug($respuesta);
     }
