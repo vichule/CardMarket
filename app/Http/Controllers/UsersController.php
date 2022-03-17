@@ -86,7 +86,7 @@ class UsersController extends Controller
 	
 					try{
 						$respuesta["status"] = 1;
-						$respuesta["msg"] = "Login correcto, tu token es: ".$usuario->api_token;
+						$respuesta["msg"] = "Login correcto, tu token es: ".$user->api_token;
 						//return response()->json($apitoken);
 						
 					}catch(\Exception $e){
@@ -98,7 +98,7 @@ class UsersController extends Controller
 				//Login mal
 				
 				$respuesta["status"] = 0;
-				$respuesta["msg"] = "La contraseña no es correcta, pruebe de nuevo ".$usuario->Nombre;
+				$respuesta["msg"] = "La contraseña no es correcta, pruebe de nuevo ".$user->Nombre;
 			}
 
 		}else{

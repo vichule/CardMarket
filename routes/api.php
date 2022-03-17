@@ -25,18 +25,26 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('users')->group(function(){
 
 	Route::post('/login',[UsersController::class,'login']);
-	Route::post('/recoverPass',[UsersController::class,'recoverPass']);
+	Route::get('/recoverPass',[UsersController::class,'recoverPass']);
 	Route::put('/register',[UsersController::class,'register']);
+    Route::get('/sellSearch',[CardsController::class,'sellSearch']);
 
 });
 
-Route::prefix('cards')->group(function(){
-
-    Route::get('/searchCard',[CardsController::class,'searchCard']);
-});
 
 Route::middleware(['apitoken','permisos'])->prefix('users')->group(function(){
 
     Route::put('/cardRegister',[UsersController::class,'cardRegister']);
+    Route::put('/CreateCollection',[CardsController::class,'CreateCollection']);
+    Route::put('/CardCollectionAsociation',[CardsController::class, 'CardCollectionAsociation']);
+
+});
+
+
+Route::middleware(['apitoken','permission2'])->prefix('users')->group(function(){
+    Route::put('/cardPurchase',[UsersController::class,'cardPurchase']);
+    Route::put('/cardSale',[UsersController::class,'cardSale']);
+    Route::get('/searchCard',[CardsController::class,'busquedaNombre']);
+    
 
 });
