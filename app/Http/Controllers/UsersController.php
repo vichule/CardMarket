@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Models\Card;
+use App\Models\BuyCard;
+use App\Models\SellCard;
 
 class UsersController extends Controller
 {
@@ -32,17 +35,17 @@ class UsersController extends Controller
     			$datos = $req->getContent();
     			$datos = json_decode($datos);
 
-    			$usuario = new User();
-    			$usuario->Username = $datos->Username;
-		    	$usuario->Email = $datos->Email;
-		    	$usuario->Password = Hash::make($datos->Password);
-		    	$usuario->Rol = $datos->Rol;
+    			$user = new User();
+    			$user->Username = $datos->Username;
+		    	$user->Email = $datos->Email;
+		    	$user->Password = Hash::make($datos->Password);
+		    	$user->Rol = $datos->Rol;
 
 		    	try{
 		            
-		    		$usuario->save();
+		    		$user->save();
 		    		$respuesta['status'] = 1;
-		    		$respuesta['msg'] = "Usuario guardado con id ".$usuario->id;
+		    		$respuesta['msg'] = "Usuario guardado con id ".$user->id;
 		            
 		    	}catch(\Exception $e){
 		    		$respuesta['status'] = 0;
@@ -64,24 +67,22 @@ class UsersController extends Controller
     	//Buscar email
     	$email = $datos->Email;
 
-		//validar
-    	//encontrar al usuario con ese email
+		
     	
 		
-    	//Pasar validacion
-		if($usuario = User::where('Email',$email)->first()){
-			$usuario = User::where('Email',$email)->first();
+		if($user = User::where('Email',$email)->first()){
+			$user = User::where('Email',$email)->first();
 			//comprobar contraseña
-			if (Hash::check($datos->Password, $usuario->Password)) {
+			if (Hash::check($datos->Password, $user->Password)) {
 				//Todo correcto
 	
 				//Generar el api token
 				do{
-					$apitoken = Hash::make($usuario->id.now());
+					$apitoken = Hash::make($user->id.now());
 				}while (User::where('api_token', $apitoken)->first()); 
 					
-					$usuario->api_token = $apitoken;
-					$usuario->save();
+					$user->api_token = $apitoken;
+					$user->save();
 	
 					try{
 						$respuesta["status"] = 1;
@@ -97,7 +98,7 @@ class UsersController extends Controller
 				//Login mal
 				
 				$respuesta["status"] = 0;
-				$respuesta["msg"] = "El login ha fallado, pruebe de nuevo ".$usuario->Nombre;
+				$respuesta["msg"] = "La contraseña no es correcta, pruebe de nuevo ".$usuario->Nombre;
 			}
 
 		}else{
@@ -120,16 +121,16 @@ class UsersController extends Controller
 
     	$email = $datos->Email;
 
-		if($usuario = User::where('Email',$email)->first()){
-			$usuario = User::where('Email',$email)->first();
-			$usuario->api_token = null;
+		if($user = User::where('Email',$email)->first()){
+			$user = User::where('Email',$email)->first();
+			$user->api_token = null;
 
 			
 
 			$password = Str::random(8);
 			
-			$usuario->Password = Hash::make($password);
-			$usuario->save();
+			$user->Password = Hash::make($password);
+			$user->save();
 
 			try{
 				
@@ -151,44 +152,91 @@ class UsersController extends Controller
     }
 
 
+	public function cardPurchase(Request $req)
+    {
+        $respuesta = ['status' => 1, 'msg' => ''];
 
-	public function cardRegister(Request $req){
-    	$respuesta = ["status" => 1, "msg" => ""];
 
+            $datos = $req->getContent();
+            $datos = json_decode($datos);
 
-    		$validator = validator::make(json_decode($req->getContent(),true), 
-    			['Name' => 'required|unique:App\Models\Card|max:55', 
-    			 'Description' => 'required|email|unique:App\Models\Card,email|max:30',
-    			 'Collections_id' => 'required'
+            $user = User::where('api_token', '=', $req->api_token)->first();
 
-    			]);
+            $card = Card::where('id','=',$datos->card)->first();
 
-    		if ($validator->fails()) {
-    			$respuesta["status"] = 0;
-    			$respuesta["msg"] = $validator->errors();
-    			
-    		}else{
-
-    			$datos = $req->getContent();
-    			$datos = json_decode($datos);
-
-    			$card = new User();
-    			$card->Name = $datos->Name;
-		    	$card->Description = $datos->Description;
-		    	
-
-		    	try{
-		            
-		    		$card->save();
-		    		$respuesta['status'] = 1;
-		    		$respuesta['msg'] = "Carta guardada con id ".$card->id;
-		            
-		    	}catch(\Exception $e){
-		    		$respuesta['status'] = 0;
-		    		$respuesta['msg'] = "Se ha producido un error ".$e->getMessage();
-		    	}
-		    	
-    		}
-    		return response()->json($respuesta);
+            if ($user) {
+                try {
+                    $cardBuy = new CartaCompra();
+                    $cardBuy->card_id = $card->id;
+                    $cardBuy->user_id = $user->id;
+                    $cardBuy->save();
+                    $respuesta['msg'] ='Carta comprada id: ' .$card->id;
+                } catch (\Exception $e) {
+                    $respuesta['status'] = 0;
+                    $respuesta['msg'] = 'Se ha producido un error: ' . $e->getMessage();
+                }
+            } else {
+                $respuesta['status'] = 0;
+                $respuesta['msg'] = 'La carta introducida es erronea o no existe';
+            }
+        return response()->json($respuesta);
     }
+
+
+
+
+    public function cardSale(Request $req)
+    {
+        $respuesta = ['status' => 1, 'msg' => ''];
+
+        $validator = Validator::make(json_decode($req->getContent(), true),
+        [
+           'card_id' => ['required', 'integer'],
+           'Amount' => ['required', 'integer'],
+           'Price' => ['required', 'numeric','min:0','not_in:0'],
+
+       ]);
+        if ($validator->fails()) {
+
+            $respuesta['status'] = 0;
+            $respuesta['msg'] = $validator->errors();
+
+        } else {
+
+            $datos = $req -> getContent();
+            $datos = json_decode($datos); 
+            $user = User::where('api_token', '=', $req->api_token)->first();
+            $cards = Card::select('id')                           
+            ->where('id','=',$datos->card_id)
+            ->get();
+
+            if ($cards){
+
+                $cardSale = new SellCard();
+                $cardSale -> card_id = $datos -> card_id;
+                $cardSale -> Amount = $datos -> Amount;
+                $cardSale -> Price = $datos->Price;
+                $cardSale -> User = $user->id;
+                
+                try {
+                    $cardSale->save();
+                    $respuesta['msg'] = "Se ha guardado la venta de la carta ".$cardSale->id;
+                } catch (\Exception $e) {
+                    $respuesta['status'] = 0;
+                    $respuesta['msg'] ='Se ha producido un error: ' . $e->getMessage();
+                }
+    
+            }else{
+                $respuesta['msg'] =
+                'La carta que ha introducido es erronea o no esta registrada';
+                    
+             }
+        }
+           
+            
+
+        return response()->json($respuesta);
+    }
+
+	
 }

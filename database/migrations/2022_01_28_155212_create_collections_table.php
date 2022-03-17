@@ -14,10 +14,10 @@ class CreateCollectionsTable extends Migration
     public function up()
     {
         Schema::create('collections', function (Blueprint $table) {
-            $table->id();
+            $table->id('id');
             $table->string('Name', 150);
             $table->string('Symbol');
-            $table->date('Launch_data');
+            $table->date('LaunchDate');
             $table->timestamps();
         });
     }
