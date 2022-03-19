@@ -17,13 +17,30 @@ class VerificarToken
      */
     public function handle(Request $request, Closure $next)
     {
-        if($request->user->PuestoTrabajo == 'Administrador'){
-            return $next($request);
+
+        $respuesta = ["status" => 1, "msg" => ""];
+
+        if(isset($request->api_token)){
+
+            $apitoken = $request->api_token;
+
+            if($user = User::where('api_token',$apitoken)->first()){
+                
+                $user = User::where('api_token',$apitoken)->first();
+
+                $respuesta["msg"] = "Api token valido";
+                $request->user = $user;
+
+                return $next($request);
+
+            }else{
+
+                $respuesta["msg"] = "token incorrecto o no existe";
+            }
 
         }else{
             $respuesta["status"] = 0;
-            $respuesta["msg"] = "Permiso denegado";
-        //Fallo
+            $respuesta["msg"] = "Error en el apitoken";
         }
 
         return response()->json($respuesta);

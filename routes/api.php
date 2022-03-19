@@ -41,7 +41,7 @@ Route::middleware(['apitoken','permisos'])->prefix('users')->group(function(){
 });
 
 
-Route::middleware(['apitoken','permission2'])->prefix('users')->group(function(){
+Route::middleware(['apitoken','permisos2'])->prefix('users')->group(function(){
     Route::put('/cardPurchase',[UsersController::class,'cardPurchase']);
     Route::put('/cardSale',[UsersController::class,'cardSale']);
     Route::get('/searchCard',[CardsController::class,'busquedaNombre']);
