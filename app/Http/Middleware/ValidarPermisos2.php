@@ -17,7 +17,7 @@ class ValidarPermisos2
      */
     public function handle(Request $request, Closure $next)
     {
-        if($request->user->roll =='Particular' || $request->user->roll =='Profesional' ){
+        if($request->user->Rol =='Particular' || $request->user->Rol =='Profesional' ){
             return $next($request);
         }else{
             $respuesta['msg'] = "Necesitas tener permisos";   

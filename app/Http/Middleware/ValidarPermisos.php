@@ -17,7 +17,7 @@ class ValidarPermisos
      */
     public function handle(Request $request, Closure $next)
     {
-        if($request->user->roll =='Administrador' ){
+        if($request->user->Rol =='Administrador' ){
             return $next($request);
         }else{
             $respuesta['msg'] = "Necesitas permisos de administrador";   
